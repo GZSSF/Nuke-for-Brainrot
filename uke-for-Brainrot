@@ -1,0 +1,481 @@
+--[[
+    ╔════════════════════════════════════════════════════════════════╗
+    ║                                                                ║
+    ║        ThiAez Hub - Premium Scripting Edition (v2.5)           ║
+    ║        Optimized for Xeno Execution & High Stability           ║
+    ║                                                                ║
+    ╚════════════════════════════════════════════════════════════════╝
+]]
+
+-- [ SERVICIOS ] --
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- [ VARIABLES DEL JUGADOR ] --
+local LocalPlayer = Players.LocalPlayer
+
+-- [ CONFIGURACIÓN DE TELEPORT ] --
+local tpEnabled = false
+local tpPosition = Vector3.new(-41.5, 27.372764587402344, -2146.1259765625)
+
+-- [ VARIABLES PARA VOLVER ] --
+local lastPosition = nil
+local canReturn = false
+
+-- [ PROTECCIÓN DE GUI ] --
+local GuiTarget = gethui and gethui() or CoreGui
+
+for _, oldGui in pairs(GuiTarget:GetChildren()) do
+    if oldGui.Name == "ThiAez_V2_Ultimate" then
+        oldGui:Destroy()
+    end
+end
+
+-- [ TEMA VISUAL ] --
+local Theme = {
+    Background = Color3.fromRGB(15, 15, 15),
+    TopBar = Color3.fromRGB(25, 25, 25),
+    Accent = Color3.fromRGB(45, 45, 45),
+    Text = Color3.fromRGB(240, 240, 240),
+    Stroke = Color3.fromRGB(65, 65, 65),
+    Green = Color3.fromRGB(46, 204, 113),
+    Red = Color3.fromRGB(231, 76, 60),
+    Blue = Color3.fromRGB(52, 152, 219),
+    Transparency = 0.25
+}
+
+-- [ CREACIÓN DE GUI ] --
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ThiAez_V2_Ultimate"
+ScreenGui.Parent = GuiTarget
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 340, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -170, 0.5, -210)
+MainFrame.BackgroundColor3 = Theme.Background
+MainFrame.BackgroundTransparency = Theme.Transparency
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+local UICorner_Main = Instance.new("UICorner")
+UICorner_Main.CornerRadius = UDim.new(0, 12)
+UICorner_Main.Parent = MainFrame
+
+local UIStroke_Main = Instance.new("UIStroke")
+UIStroke_Main.Thickness = 1.8
+UIStroke_Main.Color = Theme.Stroke
+UIStroke_Main.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke_Main.Parent = MainFrame
+
+-- [ BARRA SUPERIOR ] --
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Theme.TopBar
+TopBar.BackgroundTransparency = 0.1
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+local UICorner_Top = Instance.new("UICorner")
+UICorner_Top.CornerRadius = UDim.new(0, 12)
+UICorner_Top.Parent = TopBar
+
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -90, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "THIAEZ HUB // Nuke For Brainrot"
+Title.TextColor3 = Theme.Text
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 13
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+
+-- [ BOTONES DE CONTROL ] --
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Size = UDim2.new(0, 35, 0, 35)
+CloseBtn.Position = UDim2.new(1, -40, 0.5, -17)
+CloseBtn.BackgroundColor3 = Theme.Red
+CloseBtn.Text = ""
+CloseBtn.Parent = TopBar
+
+local UICorner_Close = Instance.new("UICorner")
+UICorner_Close.CornerRadius = UDim.new(1, 0)
+UICorner_Close.Parent = CloseBtn
+
+local CloseIcon = Instance.new("TextLabel")
+CloseIcon.Size = UDim2.new(1, 0, 1, 0)
+CloseIcon.Text = "×"
+CloseIcon.TextColor3 = Color3.new(1, 1, 1)
+CloseIcon.TextSize = 20
+CloseIcon.BackgroundTransparency = 1
+CloseIcon.Parent = CloseBtn
+
+local MinBtn = Instance.new("TextButton")
+MinBtn.Name = "MinBtn"
+MinBtn.Size = UDim2.new(0, 35, 0, 35)
+MinBtn.Position = UDim2.new(1, -80, 0.5, -17)
+MinBtn.BackgroundColor3 = Theme.Accent
+MinBtn.Text = ""
+MinBtn.Parent = TopBar
+
+local UICorner_Min = Instance.new("UICorner")
+UICorner_Min.CornerRadius = UDim.new(1, 0)
+UICorner_Min.Parent = MinBtn
+
+local MinIcon = Instance.new("TextLabel")
+MinIcon.Size = UDim2.new(1, 0, 1, 0)
+MinIcon.Text = "—"
+MinIcon.TextColor3 = Color3.new(1, 1, 1)
+MinIcon.TextSize = 16
+MinIcon.BackgroundTransparency = 1
+MinIcon.Parent = MinBtn
+
+-- [ CONTENEDOR DE OPCIONES ] --
+local Container = Instance.new("ScrollingFrame")
+Container.Name = "Container"
+Container.Size = UDim2.new(1, -20, 1, -60)
+Container.Position = UDim2.new(0, 10, 0, 50)
+Container.BackgroundTransparency = 1
+Container.BorderSizePixel = 0
+Container.ScrollBarThickness = 2
+Container.ScrollBarImageColor3 = Theme.Stroke
+Container.CanvasSize = UDim2.new(0, 0, 0, 0)
+Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Container.Parent = MainFrame
+
+local UIList = Instance.new("UIListLayout")
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 10)
+UIList.Parent = Container
+
+-- [ FUNCIONES DE ANIMACIÓN ] --
+local function Ripple(obj)
+    spawn(function()
+        local mouse = LocalPlayer:GetMouse()
+        local circle = Instance.new("ImageLabel")
+        circle.Parent = obj
+        circle.BackgroundTransparency = 1
+        circle.Image = "rbxassetid://2749469589"
+        circle.ImageColor3 = Color3.new(1, 1, 1)
+        circle.ImageTransparency = 0.8
+        circle.Size = UDim2.new(0, 0, 0, 0)
+        circle.Position = UDim2.new(0, mouse.X - obj.AbsolutePosition.X, 0, mouse.Y - obj.AbsolutePosition.Y)
+        local tween = TweenService:Create(circle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 200, 0, 200),
+            Position = UDim2.new(0, (mouse.X - obj.AbsolutePosition.X) - 100, 0, (mouse.Y - obj.AbsolutePosition.Y) - 100),
+            ImageTransparency = 1
+        })
+        tween:Play()
+        tween.Completed:Wait()
+        circle:Destroy()
+    end)
+end
+
+-- [ MÓDULO: TELEPORT CON E ] --
+local ToggleFrame = Instance.new("Frame")
+ToggleFrame.Size = UDim2.new(1, 0, 0, 50)
+ToggleFrame.BackgroundColor3 = Theme.Accent
+ToggleFrame.BackgroundTransparency = 0.6
+ToggleFrame.Parent = Container
+
+local UICorner_T = Instance.new("UICorner")
+UICorner_T.CornerRadius = UDim.new(0, 8)
+UICorner_T.Parent = ToggleFrame
+
+local ToggleLabel = Instance.new("TextLabel")
+ToggleLabel.Size = UDim2.new(1, -80, 1, 0)
+ToggleLabel.Position = UDim2.new(0, 15, 0, 0)
+ToggleLabel.BackgroundTransparency = 1
+ToggleLabel.Text = "Hold E to Teleport"
+ToggleLabel.TextColor3 = Theme.Text
+ToggleLabel.Font = Enum.Font.GothamSemibold
+ToggleLabel.TextSize = 13
+ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+ToggleLabel.Parent = ToggleFrame
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 50, 0, 24)
+ToggleBtn.Position = UDim2.new(1, -65, 0.5, -12)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ToggleBtn.Text = ""
+ToggleBtn.Parent = ToggleFrame
+
+local UICorner_Btn = Instance.new("UICorner")
+UICorner_Btn.CornerRadius = UDim.new(1, 0)
+UICorner_Btn.Parent = ToggleBtn
+
+local Switch = Instance.new("Frame")
+Switch.Size = UDim2.new(0, 20, 0, 20)
+Switch.Position = UDim2.new(0, 2, 0.5, -10)
+Switch.BackgroundColor3 = Color3.new(1, 1, 1)
+Switch.Parent = ToggleBtn
+
+local UICorner_Sw = Instance.new("UICorner")
+UICorner_Sw.CornerRadius = UDim.new(1, 0)
+UICorner_Sw.Parent = Switch
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    tpEnabled = not tpEnabled
+    Ripple(ToggleBtn)
+    if tpEnabled then
+        TweenService:Create(Switch, TweenInfo.new(0.3), {Position = UDim2.new(1, -22, 0.5, -10)}):Play()
+        TweenService:Create(ToggleBtn, TweenInfo.new(0.3), {BackgroundColor3 = Theme.Green}):Play()
+    else
+        TweenService:Create(Switch, TweenInfo.new(0.3), {Position = UDim2.new(0, 2, 0.5, -10)}):Play()
+        TweenService:Create(ToggleBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+    end
+end)
+
+-- [ MÓDULO: BOTÓN VOLVER ] --
+local ReturnFrame = Instance.new("Frame")
+ReturnFrame.Size = UDim2.new(1, 0, 0, 50)
+ReturnFrame.BackgroundColor3 = Theme.Accent
+ReturnFrame.BackgroundTransparency = 0.6
+ReturnFrame.Parent = Container
+
+local UICorner_R = Instance.new("UICorner")
+UICorner_R.CornerRadius = UDim.new(0, 8)
+UICorner_R.Parent = ReturnFrame
+
+local ReturnLabel = Instance.new("TextLabel")
+ReturnLabel.Size = UDim2.new(1, -80, 1, 0)
+ReturnLabel.Position = UDim2.new(0, 15, 0, 0)
+ReturnLabel.BackgroundTransparency = 1
+ReturnLabel.Text = "Return to Last Position"
+ReturnLabel.TextColor3 = Theme.Text
+ReturnLabel.Font = Enum.Font.GothamSemibold
+ReturnLabel.TextSize = 13
+ReturnLabel.TextXAlignment = Enum.TextXAlignment.Left
+ReturnLabel.Parent = ReturnFrame
+
+local ReturnBtn = Instance.new("TextButton")
+ReturnBtn.Size = UDim2.new(0, 50, 0, 24)
+ReturnBtn.Position = UDim2.new(1, -65, 0.5, -12)
+ReturnBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ReturnBtn.Text = ""
+ReturnBtn.Parent = ReturnFrame
+
+local UICorner_RBtn = Instance.new("UICorner")
+UICorner_RBtn.CornerRadius = UDim.new(1, 0)
+UICorner_RBtn.Parent = ReturnBtn
+
+local ReturnSwitch = Instance.new("Frame")
+ReturnSwitch.Size = UDim2.new(0, 20, 0, 20)
+ReturnSwitch.Position = UDim2.new(0, 2, 0.5, -10)
+ReturnSwitch.BackgroundColor3 = Color3.new(1, 1, 1)
+ReturnSwitch.Parent = ReturnBtn
+
+local UICorner_RSw = Instance.new("UICorner")
+UICorner_RSw.CornerRadius = UDim.new(1, 0)
+UICorner_RSw.Parent = ReturnSwitch
+
+ReturnBtn.MouseButton1Click:Connect(function()
+    Ripple(ReturnBtn)
+
+    if not canReturn or not lastPosition then
+        -- Animación de error si no hay posición guardada
+        TweenService:Create(ReturnBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Red}):Play()
+        wait(0.15)
+        TweenService:Create(ReturnBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+        return
+    end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Guardar posición actual antes de volver (por si quiere ir de vuelta)
+    local currentPos = hrp.CFrame
+
+    -- Teleport de vuelta
+    hrp.CFrame = CFrame.new(lastPosition + Vector3.new(0, 5, 0))
+
+    -- Actualizar lastPosition con la posición actual (permitir ir y volver)
+    lastPosition = currentPos.Position
+
+    -- Animación de confirmación
+    TweenService:Create(ReturnBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Blue}):Play()
+    TweenService:Create(ReturnSwitch, TweenInfo.new(0.3), {Position = UDim2.new(1, -22, 0.5, -10)}):Play()
+    wait(0.3)
+    TweenService:Create(ReturnSwitch, TweenInfo.new(0.3), {Position = UDim2.new(0, 2, 0.5, -10)}):Play()
+    TweenService:Create(ReturnBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+end)
+
+-- [ MÓDULO: LISTA DESPLEGABLE ] --
+local DropFrame = Instance.new("Frame")
+DropFrame.Size = UDim2.new(1, 0, 0, 50)
+DropFrame.BackgroundColor3 = Theme.Accent
+DropFrame.BackgroundTransparency = 0.6
+DropFrame.ClipsDescendants = true
+DropFrame.Parent = Container
+
+local UICorner_D = Instance.new("UICorner")
+UICorner_D.CornerRadius = UDim.new(0, 8)
+UICorner_D.Parent = DropFrame
+
+local DropBtn = Instance.new("TextButton")
+DropBtn.Size = UDim2.new(1, 0, 0, 50)
+DropBtn.BackgroundTransparency = 1
+DropBtn.Text = "   Locations List ▼"
+DropBtn.TextColor3 = Theme.Text
+DropBtn.Font = Enum.Font.GothamSemibold
+DropBtn.TextSize = 13
+DropBtn.TextXAlignment = Enum.TextXAlignment.Left
+DropBtn.Parent = DropFrame
+
+local ListContainer = Instance.new("Frame")
+ListContainer.Size = UDim2.new(1, -20, 0, 300)
+ListContainer.Position = UDim2.new(0, 10, 0, 55)
+ListContainer.BackgroundTransparency = 1
+ListContainer.Parent = DropFrame
+
+local UIList_D = Instance.new("UIListLayout")
+UIList_D.Padding = UDim.new(0, 5)
+UIList_D.Parent = ListContainer
+
+local locations = {
+    {"Common", Vector3.new(-17.5, 30.13, -2036.62)},
+    {"Rare", Vector3.new(-25, 30.04, -1892.62)},
+    {"Epic", Vector3.new(-25.5, 31.03, -1710.62)},
+    {"Legendary", Vector3.new(-39, 30.91, -1450.12)},
+    {"Mythic", Vector3.new(-49.5, 30.42, -1183.87)},
+    {"Godly", Vector3.new(-28.5, 31.95, -850.87)},
+    {"Secret", Vector3.new(-9.5, 31.18, -485.87)},
+    {"Celestial", Vector3.new(10, 31.86, -88.87)},
+    {"Gigantic", Vector3.new(-19, 31.86, 360.12)},
+    {"Extra Luck", Vector3.new(4.5, 31.58, 736.37)},
+    {"Infinite", Vector3.new(-18, 33.23, 1292.87)},
+    {"Ethereal", Vector3.new(-40, 33.23, 1848.37)}
+}
+
+for _, loc in pairs(locations) do
+    local LBtn = Instance.new("TextButton")
+    LBtn.Size = UDim2.new(1, 0, 0, 30)
+    LBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    LBtn.Text = loc[1]
+    LBtn.TextColor3 = Theme.Text
+    LBtn.Font = Enum.Font.Gotham
+    LBtn.TextSize = 12
+    LBtn.Parent = ListContainer
+
+    local UIC_L = Instance.new("UICorner")
+    UIC_L.CornerRadius = UDim.new(0, 4)
+    UIC_L.Parent = LBtn
+
+    LBtn.MouseButton1Click:Connect(function()
+        Ripple(LBtn)
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        -- Guardar posición antes de teleportar desde la lista
+        lastPosition = hrp.CFrame.Position
+        canReturn = true
+
+        -- Teleport simple, nada de física rara
+        hrp.CFrame = CFrame.new(loc[2] + Vector3.new(0, 5, 0))
+    end)
+end
+
+local isDropped = false
+DropBtn.MouseButton1Click:Connect(function()
+    isDropped = not isDropped
+    local targetSize = isDropped and UDim2.new(1, 0, 0, 450) or UDim2.new(1, 0, 0, 50)
+    TweenService:Create(DropFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = targetSize}):Play()
+end)
+
+-- [ TELEPORT SIMPLE: MANTENER E PRESIONADO ] --
+local eHeld = false
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if not tpEnabled then return end
+    if input.KeyCode == Enum.KeyCode.E then
+        eHeld = true
+
+        -- Guardar posición ANTES de teleportar con E
+        local char = LocalPlayer.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                lastPosition = hrp.CFrame.Position
+                canReturn = true
+            end
+        end
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.E then
+        eHeld = false
+    end
+end)
+
+-- Loop que teleporta mientras se mantiene E
+RunService.RenderStepped:Connect(function()
+    if not eHeld or not tpEnabled then return end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Solo CFrame, nada más. Simple.
+    hrp.CFrame = CFrame.new(tpPosition + Vector3.new(0, 5, 0))
+end)
+
+-- [ SISTEMA DRAGGABLE ] --
+local dragging, dragStart, startPos
+
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        local target = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        TweenService:Create(MainFrame, TweenInfo.new(0.15, Enum.EasingStyle.Linear), {Position = target}):Play()
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+
+-- [ MINIMIZAR Y CERRAR ] --
+local isMin = false
+MinBtn.MouseButton1Click:Connect(function()
+    isMin = not isMin
+    Ripple(MinBtn)
+    local targetY = isMin and 40 or 420
+    TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Size = UDim2.new(0, 340, 0, targetY)}):Play()
+    Container.Visible = not isMin
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    Ripple(CloseBtn)
+    local t = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+    t:Play()
+    t.Completed:Wait()
+    ScreenGui:Destroy()
+end)
+
+-- [ FINALIZACIÓN ] --
+print("ThiAez Hub Loaded - Hold E to Teleport | Return Button Added")
